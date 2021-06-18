@@ -102,7 +102,7 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
     fprintf(stderr, "Unable to access audio track.\n");
     return kAudioTrackError;
   }
-  if (!ptr_audio_track->SetCodecPrivate(private_data, private_size)) {
+  if (private_data && !ptr_audio_track->SetCodecPrivate(private_data, private_size)) {
     fprintf(stderr, "Unable to write audio track codec private data.\n");
     return kAudioTrackError;
   }
@@ -113,7 +113,8 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
 int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
                                  const uint8* private_data,
                                  size_t private_size,
-                                 const std::string& codec_id) {
+                                 const std::string& codec_id,
+                                 int bit_depth) {
   if (codec_id.empty()) {
     fprintf(stderr, "Cannot AddAudioTrack with empty codec_id.\n");
     return kAudioTrackError;
@@ -133,6 +134,7 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
     return kAudioTrackError;
   }
   audio_track->set_codec_id(codec_id.c_str());
+  audio_track->set_bit_depth(bit_depth);
   return audio_track_num;
 }
 
@@ -182,7 +184,8 @@ int WebMLiveMuxer::AddVideoTrack(int width, int height) {
 
 
 int WebMLiveMuxer::AddVideoTrack(int width, int height,
-                                 const std::string& codec_id) {
+                                 const std::string& codec_id,
+                                 double frame_rate) {
   if (codec_id.empty()) {
     fprintf(stderr, "Cannot AddVideoTrack with empty codec_id.\n");
     return kVideoTrackError;
@@ -201,6 +204,7 @@ int WebMLiveMuxer::AddVideoTrack(int width, int height,
     return kVideoTrackError;
   }
   video_track->set_codec_id(codec_id.c_str());
+  video_track->set_frame_rate(frame_rate);
   return video_track_num;
 }
 
@@ -251,6 +255,10 @@ bool WebMLiveMuxer::SetWritingApp(const std::string& writing_app) {
 
   ptr_segment_info->set_writing_app(writing_app.c_str());
   return true;
+}
+
+void WebMLiveMuxer::SetMaxClusterDuration(uint64_t max_cluster_duration_ns) {
+  ptr_segment_->set_max_cluster_duration(1000000000);
 }
 
 int WebMLiveMuxer::Finalize() {
@@ -338,8 +346,8 @@ int WebMLiveMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
     return kUserBufferTooSmall;
   }
 
-  fprintf(stdout, "ReadChunk capacity=%d length=%d total buffered=%zd\n",
-          buffer_capacity, chunk_length, buffer_.size());
+  //fprintf(stdout, "ReadChunk capacity=%d length=%d total buffered=%zd\n",
+  //        buffer_capacity, chunk_length, buffer_.size());
 
   // Copy chunk to user buffer, and erase it from |buffer_|.
   memcpy(ptr_buf, &buffer_[0], chunk_length);
