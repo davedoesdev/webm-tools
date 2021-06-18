@@ -40,7 +40,7 @@ WebMLiveMuxer::WebMLiveMuxer()
 WebMLiveMuxer::~WebMLiveMuxer() {
 }
 
-int WebMLiveMuxer::Init() {
+int WebMLiveMuxer::Init(uint64_t max_cluster_duration_ns) {
   // Construct and Init |WebMChunkWriter|. It handles writes coming from
   // libwebm.
   ptr_writer_.reset(new (std::nothrow) WebMChunkWriter());  // NOLINT
@@ -66,6 +66,10 @@ int WebMLiveMuxer::Init() {
   }
 
   ptr_segment_->set_mode(mkvmuxer::Segment::kLive);
+
+  if (max_cluster_duration_ns != 0) {
+    ptr_segment_->set_max_cluster_duration(max_cluster_duration_ns);
+  }
 
   // Set segment info fields.
   using mkvmuxer::SegmentInfo;
@@ -134,7 +138,9 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
     return kAudioTrackError;
   }
   audio_track->set_codec_id(codec_id.c_str());
-  audio_track->set_bit_depth(bit_depth);
+  if (bit_depth != 0) {
+    audio_track->set_bit_depth(bit_depth);
+  }
   return audio_track_num;
 }
 
@@ -204,7 +210,9 @@ int WebMLiveMuxer::AddVideoTrack(int width, int height,
     return kVideoTrackError;
   }
   video_track->set_codec_id(codec_id.c_str());
-  video_track->set_frame_rate(frame_rate);
+  if (frame_rate != 0) {
+    video_track->set_frame_rate(frame_rate);
+  }
   return video_track_num;
 }
 
@@ -255,10 +263,6 @@ bool WebMLiveMuxer::SetWritingApp(const std::string& writing_app) {
 
   ptr_segment_info->set_writing_app(writing_app.c_str());
   return true;
-}
-
-void WebMLiveMuxer::SetMaxClusterDuration(uint64_t max_cluster_duration_ns) {
-  ptr_segment_->set_max_cluster_duration(1000000000);
 }
 
 int WebMLiveMuxer::Finalize() {

@@ -102,7 +102,7 @@ class WebMLiveMuxer {
 
   // Initializes libwebm for muxing in live mode. Returns |kSuccess| when
   // successful.
-  int Init();
+  int Init(uint64_t max_cluster_duration_ns = 0);
 
   // Adds an audio track to |ptr_segment_| and returns the track number [1-127].
   // Returns |kAudioTrackAlreadyExists| when the audio track has already been
@@ -119,7 +119,7 @@ class WebMLiveMuxer {
   int AddAudioTrack(int sample_rate, int channels,
                     const uint8* private_data, size_t private_size,
                     const std::string& codec_id,
-                    int bit_depth);
+                    int bit_depth = 0);
 
   // Adds |enc_key_id| as the ContnetEncKeyID element to the Track represented
   // by |track_num|. |enc_key_id_size| is the size of |enc_key_id| in bytes.
@@ -138,7 +138,7 @@ class WebMLiveMuxer {
   // added. Returns |kVideoTrackError| when adding the track to the segment
   // fails.
   int AddVideoTrack(int width, int height, const std::string& codec_id,
-                    double frame_rate);
+                    double frame_rate = 0);
 
   // Adds a video track with the specified |codec_id| and |color_metadata| to
   // |ptr_segment_|, and returns the track number [1-127].
@@ -153,9 +153,6 @@ class WebMLiveMuxer {
 
   // Sets the muxer's writing app. Must be called before any frames are written.
   bool SetWritingApp(const std::string& writing_app);
-
-  // Sets the maximum duration of each cluster.
-  void SetMaxClusterDuration(uint64_t max_cluster_duration_ns);
 
   // Flushes any queued frames. Users MUST call this method to ensure that all
   // buffered frames are flushed out of libwebm. To determine if calling
