@@ -173,9 +173,10 @@ class WebMLiveMuxer {
 
   // Writes |data| to the muxer. |size| is the size in bytes of |data|.
   // |timestamp_ns| is the timestamp of the frame in nanoseconds.
-  // |duration_ns| is the duration of the frame in nanoseconds. |track_num|
-  // is the Track number to add the frame. |is_key| flag telling if the frame
-  // is a key frame. Returns kSuccess on success.
+  // |duration_ns| is the optional duration of the frame in nanoseconds
+  // (pass 0 if unknown). |track_num| is the Track number to add the frame.
+  // |is_key| flag telling if the frame is a key frame.
+  // Returns kSuccess on success.
   int WriteFrame(const uint8* data, size_t size,
                  uint64 timestamp_ns, uint64 duration_ns,
                  uint64 track_num, bool is_key);
