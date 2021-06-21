@@ -163,18 +163,21 @@ class WebMLiveMuxer {
 
   // Writes |data| to the audio Track. Returns kSuccess on success.
   int WriteAudioFrame(const uint8* data, size_t size,
-                      uint64 timestamp_ns, bool is_key);
+                      uint64 timestamp_ns, uint64 duration_ns,
+                      bool is_key);
 
   // Writes |data| to the video Track. Returns kSuccess on success.
   int WriteVideoFrame(const uint8* data, size_t size,
-                      uint64 timestamp_ns, bool is_key);
+                      uint64 timestamp_ns, uint64 duration_ns,
+                      bool is_key);
 
   // Writes |data| to the muxer. |size| is the size in bytes of |data|.
   // |timestamp_ns| is the timestamp of the frame in nanoseconds. |track_num|
   // is the Track number to add the frame. |is_key| flag telling if the frame
   // is a key frame. Returns kSuccess on success.
   int WriteFrame(const uint8* data, size_t size,
-                 uint64 timestamp_ns, uint64 track_num, bool is_key);
+                 uint64 timestamp_ns, uint64 duration_ms,
+                 uint64 track_num, bool is_key);
 
   // Returns true and writes chunk length to |ptr_chunk_length| when |buffer_|
   // contains a complete WebM chunk.

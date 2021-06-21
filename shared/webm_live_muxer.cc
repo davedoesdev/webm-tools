@@ -285,33 +285,46 @@ int WebMLiveMuxer::Finalize() {
 }
 
 int WebMLiveMuxer::WriteAudioFrame(const uint8* data, size_t size,
-                                   uint64 timestamp_ns, bool is_key) {
+                                   uint64 timestamp_ns, uint64_t duration_ns,
+                                   bool is_key) {
   if (audio_track_num_ == 0) {
     fprintf(stderr, "Cannot WriteAudioFrame without an audio track.\n");
     return kNoAudioTrack;
   }
-  return WriteFrame(data, size, timestamp_ns, audio_track_num_, is_key);
+  return WriteFrame(data, size, timestamp_ns, duration_ns, audio_track_num_, is_key);
 }
 
 int WebMLiveMuxer::WriteVideoFrame(const uint8* data, size_t size,
-                                   uint64 timestamp_ns, bool is_key ) {
+                                   uint64 timestamp_ns, uint64_t duration_ns,
+                                   bool is_key ) {
   if (video_track_num_ == 0) {
     fprintf(stderr, "Cannot WriteVideoFrame without a video track.\n");
     return kNoVideoTrack;
   }
-  return WriteFrame(data, size, timestamp_ns, video_track_num_, is_key);
+  return WriteFrame(data, size, timestamp_ns, duration_ns, video_track_num_, is_key);
 }
 
 int WebMLiveMuxer::WriteFrame(const uint8* data, size_t size,
-                              uint64 timestamp_ns, uint64 track_num,
-                              bool is_key) {
-  if (!ptr_segment_->AddFrame(data,
-                              size,
-                              track_num,
-                              timestamp_ns,
-                              is_key)) {
-    fprintf(stderr, "AddFrame failed.\n");
-    return kVideoWriteError;
+                              uint64 timestamp_ns, uint64 duration_ns,
+                              uint64 track_num, bool is_key) {
+  if (!data) {
+    return false;
+  }
+
+  mkvmuxer::Frame frame;
+  if (!frame.Init(data, size)) {
+    return false;
+  }
+  frame.set_track_number(track_num);
+  frame.set_timestamp(timestamp_ns);
+  frame.set_is_key(is_key);
+  if (duration_ns > 0) {
+    frame.set_duration(duration_ns);
+  }
+
+  if (!ptr_segment_->AddGenericFrame(&frame)) {
+    fprintf(stderr, "AddGenerocFrame failed.\n");
+    return track_num == audio_track_num_ ? kAudioWriteError : kVideoWriteError;
   }
   return kSuccess;
 }
