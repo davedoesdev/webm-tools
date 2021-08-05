@@ -115,10 +115,11 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
 }
 
 int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
+                                 const std::string& codec_id,
                                  const uint8* private_data,
                                  size_t private_size,
-                                 const std::string& codec_id,
-                                 int bit_depth) {
+                                 int bit_depth,
+                                 uint64 seek_pre_roll) {
   if (codec_id.empty()) {
     fprintf(stderr, "Cannot AddAudioTrack with empty codec_id.\n");
     return kAudioTrackError;
@@ -140,6 +141,9 @@ int WebMLiveMuxer::AddAudioTrack(int sample_rate, int channels,
   audio_track->set_codec_id(codec_id.c_str());
   if (bit_depth != 0) {
     audio_track->set_bit_depth(bit_depth);
+  }
+  if (seek_pre_roll != 0) {
+    audio_track->set_seek_pre_roll(seek_pre_roll);
   }
   return audio_track_num;
 }
@@ -191,7 +195,10 @@ int WebMLiveMuxer::AddVideoTrack(int width, int height) {
 
 int WebMLiveMuxer::AddVideoTrack(int width, int height,
                                  const std::string& codec_id,
-                                 double frame_rate) {
+                                 const uint8_t* private_data,
+                                 size_t private_size,
+                                 double frame_rate,
+                                 uint64_t seek_pre_roll) {
   if (codec_id.empty()) {
     fprintf(stderr, "Cannot AddVideoTrack with empty codec_id.\n");
     return kVideoTrackError;
@@ -210,8 +217,15 @@ int WebMLiveMuxer::AddVideoTrack(int width, int height,
     return kVideoTrackError;
   }
   video_track->set_codec_id(codec_id.c_str());
+  if (private_data && !video_track->SetCodecPrivate(private_data, private_size)) {
+    fprintf(stderr, "Unable to write video track codec private data.\n");
+    return kVideoTrackError;
+  }
   if (frame_rate != 0) {
     video_track->set_frame_rate(frame_rate);
+  }
+  if (seek_pre_roll != 0) {
+    video_track->set_seek_pre_roll(seek_pre_roll);
   }
   return video_track_num;
 }

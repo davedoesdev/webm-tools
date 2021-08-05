@@ -117,9 +117,11 @@ class WebMLiveMuxer {
   // added. Returns |kAudioTrackError| when adding the track to the segment
   // fails.
   int AddAudioTrack(int sample_rate, int channels,
-                    const uint8* private_data, size_t private_size,
                     const std::string& codec_id,
-                    int bit_depth = 0);
+                    const uint8* private_data = nullptr,
+                    size_t private_size = 0,
+                    int bit_depth = 0,
+                    uint64_t seek_pre_roll = 0);
 
   // Adds |enc_key_id| as the ContnetEncKeyID element to the Track represented
   // by |track_num|. |enc_key_id_size| is the size of |enc_key_id| in bytes.
@@ -138,7 +140,10 @@ class WebMLiveMuxer {
   // added. Returns |kVideoTrackError| when adding the track to the segment
   // fails.
   int AddVideoTrack(int width, int height, const std::string& codec_id,
-                    double frame_rate = 0);
+                    const uint8_t* private_data = nullptr,
+                    size_t private_size = 0,
+                    double frame_rate = 0,
+                    uint64_t seek_pre_roll = 0);
 
   // Adds a video track with the specified |codec_id| and |color_metadata| to
   // |ptr_segment_|, and returns the track number [1-127].
