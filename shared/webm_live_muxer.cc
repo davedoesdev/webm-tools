@@ -341,7 +341,7 @@ int WebMLiveMuxer::WriteFrame(const uint8* data, size_t size,
   }
 
   if (!ptr_segment_->AddGenericFrame(&frame)) {
-    fprintf(stderr, "AddGenerocFrame failed.\n");
+    fprintf(stderr, "AddGenericFrame failed.\n");
     return track_num == audio_track_num_ ? kAudioWriteError : kVideoWriteError;
   }
   return kSuccess;
